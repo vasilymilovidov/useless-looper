@@ -10,5 +10,5 @@ Scroll left/right to change the position of the playhead.
 CTRL + Scroll to change the size of the loop.
 ALT + up/down scroll to change the pitch of the loop.
 You can drop audio files directly into the window to load them.
-There's a couple of samples in `assets/audio' folder for testing.
+There's a couple of samples in `assets/audio` folder for testing.
 Currently, waveforms are shown only for the WAV format.
