@@ -1,5 +1,5 @@
 # useless-looper
-A toy audio looper written in Rust using [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui). Main purpose is to learn the GPUI library.
+A toy audio looper written in Rust using [GPUI](https://github.com/zed-industries/zed/tree/main/crates/gpui) for UI and [kittyaudio](https://github.com/zeozeozeo/kittyaudio) for audio. Main purpose is to learn the GPUI library. Very WIP.
 
 ## Run
 ```

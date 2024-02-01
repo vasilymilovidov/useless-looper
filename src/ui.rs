@@ -64,6 +64,7 @@ pub struct WaveformModel {
 
 impl WaveformModel {
     pub fn new(path: SharedString, cx: &mut ModelContext<Self>) -> Self {
+// TODO Make async
         let mut new_samples = Some(Arc::new(vec![0.0]));
         match decode_wav(path.to_string()) {
             Ok(DecodedSamples::F32(samples)) => {
@@ -89,7 +90,7 @@ impl WaveformModel {
 
     pub fn update_samples(&mut self, path: SharedString, cx: &mut ModelContext<Self>) {
         self.path = path;
-
+// TODO Make async
         match decode_wav(self.path.to_string()) {
             Ok(DecodedSamples::F32(samples)) => {
                 let compressed_samples = compress_samples(&samples, 160);
