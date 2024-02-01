@@ -251,7 +251,7 @@ impl Render for Root {
             .on_drop(cx.listener(|this, path: &ExternalPaths, _cx| {
                 let p = path.paths()[0]
                     .to_str()
-                    .unwrap_or("../assets/audio/punchy.wav")
+                    .unwrap_or("../assets/audio/piano.wav")
                     .to_owned();
                 let sound = Sound::from_path(p.clone()).unwrap();
                 let shared_path = SharedString::from(p);
