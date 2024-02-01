@@ -261,8 +261,6 @@ impl Render for Root {
                 let _s = this.sound_sender.send(sound).unwrap();
             }))
             .size_full()
-            .flex()
-            .flex_col()
             .bg(hsla(BG.0, BG.1, BG.2, BG.3))
             .child(waveform)
             // Square controls
@@ -345,8 +343,6 @@ impl Render for Root {
                     ))
                     .child(
                         div()
-                            .flex()
-                            .items_center()
                             .w(Length::Definite(px(165.0).into()))
                             .when(self.help_model.read(cx).is_shown, |this| {
                                 this.bg(hsla(HELP_BG.0, HELP_BG.1, HELP_BG.2, HELP_BG.3))
