@@ -1,8 +1,7 @@
-
 use std::sync::Arc;
 
 use crate::{
-    decoder::{compress_samples, decode_wav},
+    decoder::{compress_samples, decode_wav, DecodedSamples},
     svg_map::{Icon, IconName},
     utils::{calculate_spacing, scale_values_to_unit_range},
 };
@@ -50,7 +49,6 @@ impl Root {
         cx.observe(&loop_model, |_, _, cx| cx.notify()).detach();
         cx.observe(&help_model, |_, _, cx| cx.notify()).detach();
         Self {
-
             loop_model,
             help_model,
             waveform_model,
@@ -65,13 +63,16 @@ pub struct WaveformModel {
 }
 
 impl WaveformModel {
-    pub fn new(
-        path: SharedString,
-        cx: &mut ModelContext<Self>,
-    ) -> Self {
+    pub fn new(path: SharedString, cx: &mut ModelContext<Self>) -> Self {
         let mut new_samples = Some(Arc::new(vec![0.0]));
         match decode_wav(path.to_string()) {
-            Ok(samples) => {
+            Ok(DecodedSamples::F32(samples)) => {
+                let compressed_samples = compress_samples(&samples, 160);
+                let scaled_samples = Arc::new(scale_values_to_unit_range(compressed_samples));
+
+                new_samples = Some(scaled_samples);
+            }
+            Ok(DecodedSamples::I16(samples)) => {
                 let compressed_samples = compress_samples(&samples, 160);
                 let scaled_samples = Arc::new(scale_values_to_unit_range(compressed_samples));
                 new_samples = Some(scaled_samples);
@@ -90,7 +91,13 @@ impl WaveformModel {
         self.path = path;
 
         match decode_wav(self.path.to_string()) {
-            Ok(samples) => {
+            Ok(DecodedSamples::F32(samples)) => {
+                let compressed_samples = compress_samples(&samples, 160);
+                let scaled_samples = Arc::new(scale_values_to_unit_range(compressed_samples));
+
+                self.samples = Some(scaled_samples);
+            }
+            Ok(DecodedSamples::I16(samples)) => {
                 let compressed_samples = compress_samples(&samples, 160);
                 let scaled_samples = Arc::new(scale_values_to_unit_range(compressed_samples));
                 self.samples = Some(scaled_samples);
