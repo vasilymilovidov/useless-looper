@@ -379,7 +379,7 @@ impl Render for Root {
 pub fn get_window_options() -> WindowOptions {
     return WindowOptions {
         bounds: WindowBounds::Fixed(Bounds {
-            origin: point(GlobalPixels::from(1800.0), GlobalPixels::from(700.0)),
+            origin: point(800.0.into(), 700.0.into()),
             size: size(800.0.into(), 800.0.into()),
         }),
         titlebar: Some(TitlebarOptions {
