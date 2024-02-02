@@ -7,10 +7,10 @@ use crate::{
 };
 use crossbeam::channel::Sender;
 use gpui::{
-    div, hsla, overlay, point, prelude::FluentBuilder, px, size, AnchorCorner, Bounds, BoxShadow,
-    ExternalPaths, GlobalPixels, InteractiveElement, IntoElement, Length, Model, ModelContext,
-    ParentElement, Pixels, Point, Render, ScrollDelta, ScrollWheelEvent, SharedString, Styled,
-    TitlebarOptions, ViewContext, WindowBounds, WindowKind, WindowOptions,
+    div, hsla, overlay, point, prelude::FluentBuilder, px, relative, size, AnchorCorner, Bounds,
+    BoxShadow, ExternalPaths, GlobalPixels, InteractiveElement, IntoElement, Length, Model,
+    ModelContext, ParentElement, Pixels, Point, Render, ScrollDelta, ScrollWheelEvent,
+    SharedString, Styled, TitlebarOptions, ViewContext, WindowBounds, WindowKind, WindowOptions,
 };
 use kittyaudio::Sound;
 use smallvec::smallvec;
@@ -64,7 +64,7 @@ pub struct WaveformModel {
 
 impl WaveformModel {
     pub fn new(path: SharedString, cx: &mut ModelContext<Self>) -> Self {
-// TODO Make async
+        // TODO Make async
         let mut new_samples = Some(Arc::new(vec![0.0]));
         match decode_wav(path.to_string()) {
             Ok(DecodedSamples::F32(samples)) => {
@@ -90,7 +90,7 @@ impl WaveformModel {
 
     pub fn update_samples(&mut self, path: SharedString, cx: &mut ModelContext<Self>) {
         self.path = path;
-// TODO Make async
+        // TODO Make async
         match decode_wav(self.path.to_string()) {
             Ok(DecodedSamples::F32(samples)) => {
                 let compressed_samples = compress_samples(&samples, 160);
@@ -207,7 +207,7 @@ impl Render for Root {
                                 .child(
                                     div()
                                         .w_1()
-                                        .h(Length::Definite(px(v * value_multiplier).into()))
+                                        .h(px(v * value_multiplier))
                                         .bg(hsla(colors.0, colors.1, colors.2, colors.3))
                                         .rounded_lg()
                                         .shadow(smallvec![BoxShadow {
@@ -226,7 +226,7 @@ impl Render for Root {
 
                     let upper_waveform = waveform_box(
                         0.0,
-                        80.0,
+                        100.0,
                         WAVEFORM_UPPER,
                         WAVEFORM_UPPER_SH,
                         AnchorCorner::BottomRight,
@@ -248,6 +248,10 @@ impl Render for Root {
 
         // Construct main view tree
         div()
+            .flex()
+            .flex_col()
+            .items_center()
+            .p_5()
             .on_drop(cx.listener(|this, path: &ExternalPaths, _cx| {
                 let p = path.paths()[0]
                     .to_str()
@@ -303,10 +307,7 @@ impl Render for Root {
                     .position(point(loop_model.loop_position, 325.0.into()))
                     .child(
                         div()
-                            .w(Length::Definite({
-                                let length = loop_model.square_width.max(1.0.into());
-                                length.into()
-                            }))
+                            .w(loop_model.square_width.max(1.0.into()))
                             .h_32()
                             .bg(hsla(
                                 SQUARE.0,
@@ -336,53 +337,40 @@ impl Render for Root {
             )
             // Help view
             .child(
-                overlay()
-                    .position(point(
-                        px(((window_width - 165.0) / 2.0) as f32),
-                        px(window_height as f32 * 0.05),
-                    ))
-                    .child(
-                        div()
-                            .w(Length::Definite(px(165.0).into()))
-                            .when(self.help_model.read(cx).is_shown, |this| {
-                                this.bg(hsla(HELP_BG.0, HELP_BG.1, HELP_BG.2, HELP_BG.3))
-                                    .rounded_lg()
-                                    .p_2()
-                                    .text_color(hsla(
-                                        HELP_TEXT.0,
-                                        HELP_TEXT.1,
-                                        HELP_TEXT.2,
-                                        HELP_TEXT.3,
-                                    ))
-                                    .shadow(smallvec![BoxShadow {
-                                        color: hsla(HELP_SH.0, HELP_SH.1, HELP_SH.2, HELP_SH.3),
-                                        blur_radius: px(11.),
-                                        offset: Point::default(),
-                                        spread_radius: px(5.)
-                                    }])
-                                    .child(format!("{}", self.help_model.read(cx).text))
-                            }),
-                    ),
+                div()
+                    .w(px(165.0))
+                    .when(self.help_model.read(cx).is_shown, |this| {
+                        this.bg(hsla(HELP_BG.0, HELP_BG.1, HELP_BG.2, HELP_BG.3))
+                            .rounded_lg()
+                            .p_2()
+                            .text_color(hsla(HELP_TEXT.0, HELP_TEXT.1, HELP_TEXT.2, HELP_TEXT.3))
+                            .shadow(smallvec![BoxShadow {
+                                color: hsla(HELP_SH.0, HELP_SH.1, HELP_SH.2, HELP_SH.3),
+                                blur_radius: px(11.),
+                                offset: Point::default(),
+                                spread_radius: px(5.)
+                            }])
+                            .child(format!("{}", self.help_model.read(cx).text))
+                    }),
             )
             // Help icon
             .child(
-                overlay()
-                    .position(point(15.0.into(), (window_height - 20.0).into()))
+                div()
+                    .absolute()
+                    .px_2()
+                    .pt(relative(0.915))
                     .child(
-                        div()
-                            .child(
-                                Icon::new(IconName::QuestionMark)
-                                    .w_8()
-                                    .h_8()
-                                    .text_color(hsla(HELP_IC.0, HELP_IC.1, HELP_IC.2, HELP_IC.3)),
-                            )
-                            // Help controls
-                            .on_mouse_down(
-                                gpui::MouseButton::Left,
-                                cx.listener(|this, _, cx| {
-                                    this.help_model.update(cx, |help, _cx| help.show_help());
-                                }),
-                            ),
+                        Icon::new(IconName::QuestionMark)
+                            .w_8()
+                            .h_8()
+                            .text_color(hsla(HELP_IC.0, HELP_IC.1, HELP_IC.2, HELP_IC.3)),
+                    )
+                    // Help controls
+                    .on_mouse_down(
+                        gpui::MouseButton::Left,
+                        cx.listener(|this, _, cx| {
+                            this.help_model.update(cx, |help, _cx| help.show_help());
+                        }),
                     ),
             )
     }
